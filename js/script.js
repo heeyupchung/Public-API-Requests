@@ -3,8 +3,9 @@
  */
 
 const gallery = document.getElementById('gallery');
-const searchContainer = document.getElementsByClassName('search-container');
+const searchContainer = document.getElementsByClassName('search-container')[0];
 const modalContainer = document.createElement('div');
+const employees = [];
 
 /** 
  * Dynamically Adding Functions
@@ -28,7 +29,7 @@ function generateGallery(data) {
                 <img class="card-img" src="${data.picture.medium}" alt="profile picture">
             </div>
             <div class="card-info-container">
-                <h3 id="name" class="card-name cap">${data.name.first} ${data.name.last}</h3>
+                <h3 id="${data.name.first}" class="card-name cap">${data.name.first} ${data.name.last}</h3>
                 <p class="card-text">${data.email}</p>
                 <p class="card-text cap">${data.location.city}, ${data.location.state}</p>
             </div>
@@ -51,53 +52,120 @@ function generateModalContainer(data) {
                     <hr>
                     <p class="modal-text">${data.cell}</p>
                     <p class="modal-text">${data.location.street.number} ${data.location.street.name}, ${data.location.city}, ${data.location.state} ${data.location.postcode}</p>
-                    <p class="modal-text">Birthday: ${data.dob.date.substring(5,7)}/${data.dob.date.substring(8,10)}/${data.dob.date.substring(0,5)}</p>
+                    <p class="modal-text">Birthday: ${data.dob.date.substring(5,7)}/${data.dob.date.substring(8,10)}/${data.dob.date.substring(0,4)}</p>
                 </div>
             </div>
     `;
 
     modalContainer.innerHTML = modalContainerHTML;
     gallery.append(modalContainer);
-    //element.insertAdjacentHTML('beforeend', 'HTML string') this is what they said to use instead
 }
 
 /**
- * Fetching Data Functions
+ * Fetching Data
  */
 
-async function fetchData(url) {
+
+ async function fetchData(url) {
     return fetch(url)
-        .then(res => res.json()); //for loop this twelve times? and then store in something to have 12 objects
+        .then(res => res.json()); 
 }
 
-fetchData('https://randomuser.me/api/')
+fetchData('https://randomuser.me/api/?results=12&nat=us')
     .then(data => {
-        for (let i = 0; i < 12; i++) { //and then iterate through the 12 objects here?
-            generateGallery(data.results[0]);
+        for (let i = 0; i < 12; i++) { 
+            employees.push(data.results[i]);
+            generateGallery(data.results[i]);
         }
-        gallery.addEventListener('click', e => {
-            generateModalContainer(data.results[0]);
-        });
     });
-
-/**
- * Function calls
- */
-
-generateSearchContainer();
 
 /**
  * Event Listeners
  */
 
-// searchContainer.addEventListener('click', e => {
+document.addEventListener('click', e => {
+    if (e.target.id === "modal-close-btn" || e.target.className == "modal-container" || e.target.tagName.toLowerCase() === "strong") {
+        modalContainer.remove();
+    }
+});
 
-// });
+gallery.addEventListener('click', e=> {
+    if (e.target.className === "card") {
+        let personNum;
+        let person = e.target.children[1].children[0].id;
+        for (i = 0; i < 12; i++) {
+            if (person === employees[i].name.first) {
+                personNum = i;
+            }
+        }
+        generateModalContainer(employees[personNum]); // has to correspond with each person
+    }
+    if (e.target.className === "card-img" || e.target.className === "card-name" || e.target.className === "card-text" || e.target.className === "card-name cap" || e.target.className === "card-text cap") {
+        let personNum;
+        let person = e.target.parentElement.parentElement.children[1].children[0].id;
+        for (i = 0; i < 12; i++) {
+            if (person === employees[i].name.first) {
+                personNum = i;
+            }
+        }
+        generateModalContainer(employees[personNum]); // has to correspond with each person
+    }
+    if (e.target.className === "card-info-container" || e.target.className === "card-img-container") {
+        let personNum;
+        let person = e.target.parentElement.children[1].children[0].id;
+        for (i = 0; i < 12; i++) {
+            if (person === employees[i].name.first) {
+                personNum = i;
+            }
+        }
+        generateModalContainer(employees[personNum]); // has to correspond with each person
+    }
+});
 
+function searchInputListener() {
+    document.getElementById('search-input').addEventListener('input', e => {
+        let val = e.target.value;
+        gallery.innerHTML = ``;
+        searchBox = [];
+    
+        employees.forEach(employee => {
+            if(employee.name.first.toLowerCase().includes(val.toLowerCase()) || employee.name.last.toLowerCase().includes(val.toLowerCase())) {
+                searchBox.push(employee);
+            }
+        });
+    
+        searchBox.forEach(person => generateGallery(person));
+        
+    });
+} 
 
+function searchSubmitListener() {
+    document.getElementById('search-submit').addEventListener('submit', e => {
+        e.target.preventDefault();
+        let val = e.target.value;
+        gallery.innerHTML = ``;
+        searchBox = [];
+    
+        employees.forEach(employee => {
+            if(employee.name.first.toLowerCase().includes(val.toLowerCase()) || employee.name.last.toLowerCase().includes(val.toLowerCase())) {
+                searchBox.push(employee);
+            }
+        });
+    
+        searchBox.forEach(person => generateGallery(person));
+        
+    });
+} 
 
-// modalContainer.addEventListener('click', e => {
+/**
+ * Helper Functions
+ */
 
-// });
+function search() {
+    let searchBox = [];
+    searchInputListener();
+    searchSubmitListener();
+}
 
-document.getElementById('modal-close-btn').addEventListener('click', () => modalContainer.remove());
+generateSearchContainer();
+search();
