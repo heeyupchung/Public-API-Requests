@@ -65,16 +65,22 @@ function generateModalContainer(data) {
  * Fetching Data
  */
 
-
+//asynchronously fetches data from API given in url
  async function fetchData(url) {
     return fetch(url)
+
+        //returns results from json and converts it to javascript object
         .then(res => res.json()); 
 }
 
 fetchData('https://randomuser.me/api/?results=12&nat=us')
     .then(data => {
         for (let i = 0; i < 12; i++) { 
+
+            //adds each employee into an array to work with later
             employees.push(data.results[i]);
+
+            //generates the cards for each employee in the gallery
             generateGallery(data.results[i]);
         }
     });
@@ -83,13 +89,17 @@ fetchData('https://randomuser.me/api/?results=12&nat=us')
  * Event Listeners
  */
 
+//event listener for closing the modal container
 document.addEventListener('click', e => {
     if (e.target.id === "modal-close-btn" || e.target.className == "modal-container" || e.target.tagName.toLowerCase() === "strong") {
         modalContainer.remove();
     }
 });
 
+//event listener for generating modal containers corresponding to each employee
 gallery.addEventListener('click', e=> {
+
+    //generate modal containers for clicking on the card itself
     if (e.target.className === "card") {
         let personNum;
         let person = e.target.children[1].children[0].id;
@@ -98,18 +108,10 @@ gallery.addEventListener('click', e=> {
                 personNum = i;
             }
         }
-        generateModalContainer(employees[personNum]); // has to correspond with each person
+        generateModalContainer(employees[personNum]); 
     }
-    if (e.target.className === "card-img" || e.target.className === "card-name" || e.target.className === "card-text" || e.target.className === "card-name cap" || e.target.className === "card-text cap") {
-        let personNum;
-        let person = e.target.parentElement.parentElement.children[1].children[0].id;
-        for (i = 0; i < 12; i++) {
-            if (person === employees[i].name.first) {
-                personNum = i;
-            }
-        }
-        generateModalContainer(employees[personNum]); // has to correspond with each person
-    }
+
+    //generate modal containers for clicking on card's children elements
     if (e.target.className === "card-info-container" || e.target.className === "card-img-container") {
         let personNum;
         let person = e.target.parentElement.children[1].children[0].id;
@@ -118,13 +120,28 @@ gallery.addEventListener('click', e=> {
                 personNum = i;
             }
         }
-        generateModalContainer(employees[personNum]); // has to correspond with each person
+        generateModalContainer(employees[personNum]); 
+    }
+
+    //generate modal containers for clicking on card's children's children elements
+    if (e.target.className === "card-img" || e.target.className === "card-name" || e.target.className === "card-text" || e.target.className === "card-name cap" || e.target.className === "card-text cap") {
+        let personNum;
+        let person = e.target.parentElement.parentElement.children[1].children[0].id;
+        for (i = 0; i < 12; i++) {
+            if (person === employees[i].name.first) {
+                personNum = i;
+            }
+        }
+        generateModalContainer(employees[personNum]); 
     }
 });
 
+//event listener for searching the inputted employee name
 function searchInputListener() {
     document.getElementById('search-input').addEventListener('input', e => {
         let val = e.target.value;
+
+        //clear the page and matches when new input is entered
         gallery.innerHTML = ``;
         searchBox = [];
     
@@ -139,10 +156,13 @@ function searchInputListener() {
     });
 } 
 
+//event listener for searching the submitted employee name
 function searchSubmitListener() {
     document.getElementById('search-submit').addEventListener('submit', e => {
         e.target.preventDefault();
         let val = e.target.value;
+
+        //clear the page and matches when new input is entered
         gallery.innerHTML = ``;
         searchBox = [];
     
@@ -167,5 +187,8 @@ function search() {
     searchSubmitListener();
 }
 
+//generates the search container on screen
 generateSearchContainer();
+
+//makes searching functional
 search();
